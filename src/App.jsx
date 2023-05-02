@@ -2,6 +2,7 @@ import { useState,useEffect } from 'react'
 import Header from './components/Header'
 import Modal from './components/Modal';
 import ListadoGastos from './components/ListadoGastos';
+import Filtros from './components/Filtros';
 import { generarId } from './helpers';
 import IconoNuevoGasto from './img/nuevo-gasto.svg'
 import { object } from 'prop-types';
@@ -14,9 +15,13 @@ function App() {
   const [isValidPresupuesto,setIsValidPresupuesto]=useState(false);
   const [modal,setModal]=useState(false);
   const [animarModal,setAnimarModal]=useState(false);
-  const [gastos,setGastos]=useState([]);
+  const [gastos,setGastos]=useState(
+    localStorage.getItem("gastos") ? JSON.parse(localStorage.getItem("gastos")):[]
+  );
 
   const [gastoEditar,setGastoEditar]=useState({})
+  const [filtro,setFiltro]=useState("")
+  const [gastosFiltrados,setGastosFiltrados]=useState([])
   
 
   useEffect(()=>{
@@ -32,6 +37,17 @@ function App() {
     localStorage.setItem("presupuesto",presupuesto ?? 0)
   },[presupuesto])
   
+  useEffect(()=>{
+    localStorage.setItem("gastos", JSON.stringify(gastos)??[]);
+  },[gastos])
+
+  useEffect(()=>{
+    if(filtro){
+      const gastosFiltrados=gastos.filter(gasto=>gasto.categoria===filtro);
+      setGastosFiltrados(gastosFiltrados);
+    }
+  },[filtro])
+
   useEffect(()=>{
     const presupuestoLS=Number(localStorage.getItem("presupuesto" )) ?? 0;
     if(presupuestoLS>0){
@@ -76,15 +92,22 @@ function App() {
         isValidPresupuesto={isValidPresupuesto}
         setIsValidPresupuesto={setIsValidPresupuesto}
         gastos={gastos}
+        setGastos={setGastos}
       />
 
       {isValidPresupuesto && (
         <>
         <main>
+          <Filtros
+            filtro={filtro}
+            setFiltro={setFiltro}
+          />
           <ListadoGastos
             gastos={gastos}
             setGastoEditar={setGastoEditar}
             eliminarGasto={eliminarGasto}
+            filtro={filtro}
+            gastosFiltrados={gastosFiltrados}
           />
         </main>
           <div className='nuevo-gasto'>
